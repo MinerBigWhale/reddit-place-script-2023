@@ -1,5 +1,6 @@
 import math
 import ssl
+import random
 
 import requests
 import json
@@ -445,12 +446,12 @@ class PlaceClient:
                         new_rgb,
                     )
                     break
-                else:
-                    logger.info(
-                        "Transparent Pixel at {}, {} skipped",
-                        x + self.pixel_x_start,
-                        y + self.pixel_y_start,
-                    )
+                # else:
+                    # logger.info(
+                        # "Transparent Pixel at {}, {} skipped",
+                        # x + self.pixel_x_start,
+                        # y + self.pixel_y_start,
+                    # )
             x += 1
             loopedOnce = True
         return x, y, new_rgb
@@ -643,7 +644,25 @@ class PlaceClient:
                     current_timestamp >= next_pixel_placement_time
                     or self.first_run_counter <= index
                 ):
+                    
+                    randjump = random.randrange(10000)
+                    logger.info("Thread #{} : skiping {}", index, randjump)
+                    step = 0
+                    while randjump > step:
+                        step +=1
+                        current_r += 1
 
+                        # go back to first column when reached end of a row while drawing
+                        if current_r >= self.image_size[0]:
+                            current_r = 0
+                            current_c += 1
+
+                        # exit when all pixels drawn
+                        if current_c >= self.image_size[1]:
+                            #logger.info("Thread #{} :: image completed", index)
+                            current_c = 0
+                    logger.info("Thread #{} : r{}, c{}", index, current_r, current_c)
+                    
                     # place pixel immediately
                     # first_run = False
                     self.first_run_counter += 1
@@ -693,18 +712,7 @@ class PlaceClient:
                         canvas,
                         index,
                     )
-
-                    current_r += 1
-
-                    # go back to first column when reached end of a row while drawing
-                    if current_r >= self.image_size[0]:
-                        current_r = 0
-                        current_c += 1
-
-                    # exit when all pixels drawn
-                    if current_c >= self.image_size[1]:
-                        logger.info("Thread #{} :: image completed", index)
-                        break
+                    
 
             if not repeat_forever:
                 break
